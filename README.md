@@ -87,7 +87,9 @@ Technology:
 
 	`Socioboard-5.0 is a centralized API that is implemented in Node.js, Express, Mongoose and Sequelize ORM, and Frontend has been integrated with PHP. The configuration links will be added soon.`
 
+* **Socioboard-developer (` New with Organization`)**
 
+	`Socioboard-developer is Organization where all the team members push their code with short intervals to keep the code up to date`
 ---
 Developer's Documentation :
 ===========================
