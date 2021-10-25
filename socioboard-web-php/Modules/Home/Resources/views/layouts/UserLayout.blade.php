@@ -2,7 +2,6 @@
 <html lang="en">
 <!--begin::Head-->
 <head>
-    <!-- Google Analytics -->
     <script>
         window.ga = window.ga || function () {
             (ga.q = ga.q || []).push(arguments)
@@ -13,26 +12,19 @@
     </script>
     <script async src='https://www.google-analytics.com/analytics.js'></script>
     <!-- End Google Analytics -->
-
-    <!-- Hotjar Tracking Code for https://appv5.socioboard.com/login -->
+    <script src="{{asset('js/libraries/socket-io.min.js')}}"></script>
+    <script src="{{asset('js/libraries/axios.min.js')}}"></script>
+{{--    <script src="http://localhost:3030/siofu/client.js"></script>--}}
+    <script src="{{ config('env.MIX_SOCKET_URL') }}siofu/client.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.0.12/dist/css/select2.min.css" rel="stylesheet" type="text/css">
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.0.12/dist/js/select2.min.js"></script>
     <script>
-        (function (h, o, t, j, a, r) {
-            h.hj = h.hj || function () {
-                (h.hj.q = h.hj.q || []).push(arguments)
-            };
-            h._hjSettings = {hjid: 2537425, hjsv: 6};
-            a = o.getElementsByTagName('head')[0];
-            r = o.createElement('script');
-            r.async = 1;
-            r.src = t + h._hjSettings.hjid + j + h._hjSettings.hjsv;
-            a.appendChild(r);
-        })(window, document, 'https://static.hotjar.com/c/hotjar-', '.js?sv=');
+        const MIX_SOCKET_URL = '{{ config('env.MIX_SOCKET_URL') }}';
     </script>
-
 @include('user::Layouts._header')
 @yield('links')
 <!--end::Global Theme Styles-->
-
     <!--begin::Layout Themes(used by all pages)-->
     <!--end::Layout Themes-->
     <link rel="shortcut icon" href="{{asset('public/media/logos/favicon.ico')}}"/>
@@ -346,7 +338,7 @@
                                         </div>
                                         <div class="d-flex align-items-center mt-4 ml-4" id="readAllUser">
                                             <label class="checkbox checkbox-lg checkbox-lg flex-shrink-0 mr-4">
-                                                <input type="checkbox" id="checkboxes2" value="1"/>
+                                                <input type="checkbox" id="checkboxes2" class="checkboxes_input" value="1"/>
                                                 <span></span>
                                             </label>
                                             <span>Read all User notifications</span>
@@ -363,7 +355,7 @@
                                         </div>
                                         <div class="d-flex align-items-center mt-4 ml-4" id="readAllPublish">
                                             <label class="checkbox checkbox-lg checkbox-lg flex-shrink-0 mr-4">
-                                                <input type="checkbox" id="checkboxes2" value="1"/>
+                                                <input type="checkbox" id="checkboxes3" class="checkboxes_input" value="1"/>
                                                 <span></span>
                                             </label>
                                             <span>Read all publishing notifications</span>
@@ -380,8 +372,8 @@
                         <!--end::Notifications-->
 
                         <!--begin::Chat-->
-                        <div class="topbar-item mr-2">
-                            <div class="btn btn-icon btn-lg" data-toggle="modal" data-target="" title="Coming Soon"
+                        <div id="nav-chat" class="topbar-item mr-2">
+                            <div class="btn btn-icon btn-lg" data-toggle="modal" data-target="#Sb_chat_modal" title="Chat"
                                  id="chats">
                                         <span class="svg-icon svg-icon-xl">
                                             <i class="fas fa-comments"></i>
@@ -769,7 +761,7 @@
                                                         </a>
                                                     </li>
                                                     <li class="menu-item  menu-item-submenu" data-menu-toggle="hover"
-                                                                aria-haspopup="true">
+                                                        aria-haspopup="true">
                                                         <a onclick="planCheck('{{env('APP_URL')}}feeds/instagram')"
                                                            class="menu-link"
                                                         >
@@ -800,8 +792,9 @@
                                                     </li>
                                                     <li class="menu-item  menu-item-submenu" data-menu-toggle="hover"
                                                         aria-haspopup="true">
-                                                        <a onclick="planCheck('{{env('APP_URL')}}feeds/linkedIn')" class="menu-link"
-                                                           id="linkedinFeeds" >
+                                                        <a onclick="planCheck('{{env('APP_URL')}}feeds/linkedIn')"
+                                                           class="menu-link"
+                                                           id="linkedinFeeds">
                                                             <span class="menu-text">Linkedin</span>
                                                         </a>
                                                     </li>
@@ -942,6 +935,21 @@
                                                         <a href="#" class="menu-link" onclick="return false"
                                                            id="Shareathon" title="Coming Soon">
                                                             <span class="menu-text">Page Shareathon</span>
+                                                        </a>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </li>
+                                        <li class="menu-item  menu-item-submenu menu-item-rel" data-menu-toggle="click" aria-haspopup="true">
+                                            <a href="javascript:;" class="menu-link menu-toggle btn font-weight-bold my-2 my-lg-0 mr-3">
+                                                <span class="menu-text"><i class="icon-md fas fa-chart-bar"></i> Competitor analysis</span>
+                                                <span class="menu-desc"></span><i class="menu-arrow"></i>
+                                            </a>
+                                            <div class="menu-submenu menu-submenu-classic menu-submenu-left">
+                                                <ul class="menu-subnav">
+                                                    <li class="menu-item  menu-item-submenu" data-menu-toggle="hover" aria-haspopup="true">
+                                                        <a onclick="planCheck('{{env('APP_URL')}}discovery/analytics')" class="menu-link">
+                                                            <span class="menu-text">Competitor analysis</span>
                                                         </a>
                                                     </li>
                                                 </ul>
@@ -1309,6 +1317,23 @@
                             </div>
                         </div>
                     </a>
+                    <a href="{{route('shortening-links')}}" class="navi-item">
+                        <div class="navi-link">
+                            <div class="symbol symbol-40 bg-light mr-3">
+                                <div class="symbol-label">
+                                    <i class="fa fa-link text-danger"></i>
+                                </div>
+                            </div>
+                            <div class="navi-text">
+                                <div class="font-weight-bold">
+                                    Link Shortening
+                                </div>
+                                <div class="text-muted">
+                                    latest links
+                                </div>
+                            </div>
+                        </div>
+                    </a>
                 </div>
                 <!--end::Nav-->
 
@@ -1456,297 +1481,7 @@
 
 
         <!--begin::Chat Panel-->
-        <div class="modal modal-sticky modal-sticky-bottom-right" id="Sb_chat_modal" role="dialog"
-             data-backdrop="false">
-            <div class="modal-dialog" role="document">
-                <div class="modal-content">
-                    <!--begin::Card-->
-                    <div class="card card-custom">
-                        <!--begin::Header-->
-                        <div class="card-header align-items-center px-4 py-3">
-                            <div class="text-left flex-grow-1">
-                                <!--begin::Dropdown Menu-->
-                                <div class="dropdown dropdown-inline">
-                                    <button type="button" class="btn btn-clean btn-sm btn-icon btn-icon-md"
-                                            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                    <span class="svg-icon svg-icon-lg">
-                                        <i class="fas fa-user-plus"></i>
-                                    </span>
-                                    </button>
-                                    <div class="dropdown-menu p-0 m-0 dropdown-menu-right dropdown-menu-md">
-                                        <!--begin::Navigation-->
-                                        <ul class="navi navi-hover py-5">
-                                            <li class="navi-item">
-                                                <a href="#" class="navi-link">
-                                                    <span class="navi-icon"><i class="flaticon2-drop"></i></span>
-                                                    <span class="navi-text">New Group</span>
-                                                </a>
-                                            </li>
-                                            <li class="navi-item">
-                                                <a href="#" class="navi-link">
-                                                    <span class="navi-icon"><i class="flaticon2-list-3"></i></span>
-                                                    <span class="navi-text">Contacts</span>
-                                                </a>
-                                            </li>
-                                            <li class="navi-item">
-                                                <a href="#" class="navi-link">
-                                                    <span class="navi-icon"><i class="flaticon2-rocket-1"></i></span>
-                                                    <span class="navi-text">Groups</span>
-                                                    <span class="navi-link-badge">
-                                                    <span
-                                                            class="label label-light-primary label-inline font-weight-bold">new</span>
-                                                </span>
-                                                </a>
-                                            </li>
-                                            <li class="navi-item">
-                                                <a href="#" class="navi-link">
-                                                    <span class="navi-icon"><i class="flaticon2-bell-2"></i></span>
-                                                    <span class="navi-text">Calls</span>
-                                                </a>
-                                            </li>
-                                            <li class="navi-item">
-                                                <a href="#" class="navi-link">
-                                                    <span class="navi-icon"><i class="flaticon2-gear"></i></span>
-                                                    <span class="navi-text">Settings</span>
-                                                </a>
-                                            </li>
-
-                                            <li class="navi-separator my-3"></li>
-
-                                            <li class="navi-item">
-                                                <a href="#" class="navi-link">
-                                                    <span class="navi-icon"><i
-                                                                class="flaticon2-magnifier-tool"></i></span>
-                                                    <span class="navi-text">Help</span>
-                                                </a>
-                                            </li>
-                                            <li class="navi-item">
-                                                <a href="#" class="navi-link">
-                                                    <span class="navi-icon"><i class="flaticon2-bell-2"></i></span>
-                                                    <span class="navi-text">Privacy</span>
-                                                    <span class="navi-link-badge">
-                                                    <span
-                                                            class="label label-light-danger label-rounded font-weight-bold">5</span>
-                                                </span>
-                                                </a>
-                                            </li>
-                                        </ul>
-                                        <!--end::Navigation-->
-                                    </div>
-                                </div>
-                                <!--end::Dropdown Menu-->
-                            </div>
-                            <div class="text-center flex-grow-1">
-                                <div class="font-weight-bold font-size-h5">SocioBoard <span
-                                            class="text-mute">Team</span></div>
-                                <div>
-                                    <span class="label label-dot label-success"></span>
-                                    <span class="font-weight-bold text-muted font-size-sm">Active</span>
-                                </div>
-                            </div>
-                            <div class="text-right flex-grow-1">
-                                <button type="button" class="btn btn-clean btn-sm btn-icon btn-icon-md"
-                                        data-dismiss="modal">
-                                    <i class="ki ki-close icon-1x"></i>
-                                </button>
-                            </div>
-                        </div>
-                        <!--end::Header-->
-
-                        <!--begin::Body-->
-                        <div class="card-body">
-                            <!--begin::Scroll-->
-                            <div class="scroll scroll-pull" data-height="375" data-mobile-height="300">
-                                <!--begin::Messages-->
-                                <div class="messages">
-                                    <!--begin::Message In-->
-                                    <div class="d-flex flex-column mb-5 align-items-start">
-                                        <div class="d-flex align-items-center">
-                                            <div class="symbol symbol-circle symbol-40 mr-3">
-                                                <img alt="Pic" src="<?php echo SquareProfilePic(); ?>"
-                                                     id="header_image_out"
-                                                     class="symbol-label font-weight-bold" id="header_profile_picture">
-                                            </div>
-                                            <div>
-                                                <a href="#" class="text-hover-primary font-weight-bold font-size-h6">Matt
-                                                    Pears</a>
-                                                <span class="text-muted font-size-sm">2 Hours</span>
-                                            </div>
-                                        </div>
-                                        <div
-                                                class="mt-2 rounded p-5 bg-light-success text-dark-50 font-weight-bold font-size-lg text-left max-w-400px">
-                                            How likely are you to recommend our company
-                                            to your friends and family?
-                                        </div>
-                                    </div>
-                                    <!--end::Message In-->
-
-                                    <!--begin::Message Out-->
-                                    <div class="d-flex flex-column mb-5 align-items-end">
-                                        <div class="d-flex align-items-center">
-                                            <div>
-                                                <span class="text-muted font-size-sm">3 minutes</span>
-                                                <a href="#"
-                                                   class="text-hover-primary font-weight-bold font-size-h6">You</a>
-                                            </div>
-                                            <div class="symbol symbol-circle symbol-40 ml-3">
-                                                <img alt="Pic" src="{{asset('media/svg/avatars/012-girl-5.svg')}}"/>
-                                            </div>
-                                        </div>
-                                        <div
-                                                class="mt-2 rounded p-5 bg-light-primary text-dark-50 font-weight-bold font-size-lg text-right max-w-400px">
-                                            Hey there, we’re just writing to let you know
-                                            that you’ve been subscribed to a repository on GitHub.
-                                        </div>
-                                    </div>
-                                    <!--end::Message Out-->
-
-                                    <!--begin::Message In-->
-                                    <div class="d-flex flex-column mb-5 align-items-start">
-                                        <div class="d-flex align-items-center">
-                                            <div class="symbol symbol-circle symbol-40 mr-3">
-                                                <img alt="Pic" src="{{asset('media/svg/avatars/014-girl-7.svg')}}"/>
-                                            </div>
-                                            <div>
-                                                <a href="#" class="text-hover-primary font-weight-bold font-size-h6">Matt
-                                                    Pears</a>
-                                                <span class="text-muted font-size-sm">40 seconds</span>
-                                            </div>
-                                        </div>
-                                        <div
-                                                class="mt-2 rounded p-5 bg-light-success text-dark-50 font-weight-bold font-size-lg text-left max-w-400px">
-                                            Ok, Understood!
-                                        </div>
-                                    </div>
-                                    <!--end::Message In-->
-
-                                    <!--begin::Message Out-->
-                                    <div class="d-flex flex-column mb-5 align-items-end">
-                                        <div class="d-flex align-items-center">
-                                            <div>
-                                                <span class="text-muted font-size-sm">Just now</span>
-                                                <a href="#" class=" text-hover-primary font-weight-bold font-size-h6">You</a>
-                                            </div>
-                                            <div class="symbol symbol-circle symbol-40 ml-3">
-                                                <img alt="Pic" src="{{asset('media/svg/avatars/011-boy-5.svg')}}"/>
-                                            </div>
-                                        </div>
-                                        <div
-                                                class="mt-2 rounded p-5 bg-light-primary text-dark-50 font-weight-bold font-size-lg text-right max-w-400px">
-                                            You’ll receive notifications for all issues, pull requests!
-                                        </div>
-                                    </div>
-                                    <!--end::Message Out-->
-
-                                    <!--begin::Message In-->
-                                    <div class="d-flex flex-column mb-5 align-items-start">
-                                        <div class="d-flex align-items-center">
-                                            <div class="symbol symbol-circle symbol-40 mr-3">
-                                                <img alt="Pic" src="{{asset('media/svg/avatars/011-boy-5.svg')}}"/>
-                                            </div>
-                                            <div>
-                                                <a href="#" class=" text-hover-primary font-weight-bold font-size-h6">Matt
-                                                    Pears</a>
-                                                <span class="text-muted font-size-sm">40 seconds</span>
-                                            </div>
-                                        </div>
-                                        <div
-                                                class="mt-2 rounded p-5 bg-light-success text-dark-50 font-weight-bold font-size-lg text-left max-w-400px">
-                                            You can unwatch this repository immediately by clicking here: <a href="#">https://github.com</a>
-                                        </div>
-                                    </div>
-                                    <!--end::Message In-->
-
-                                    <!--begin::Message Out-->
-                                    <div class="d-flex flex-column mb-5 align-items-end">
-                                        <div class="d-flex align-items-center">
-                                            <div>
-                                                <span class="text-muted font-size-sm">Just now</span>
-                                                <a href="#" class=" text-hover-primary font-weight-bold font-size-h6">You</a>
-                                            </div>
-                                            <div class="symbol symbol-circle symbol-40 ml-3">
-                                                <img alt="Pic" src="{{asset('media/svg/avatars/013-girl-6.svg')}}"/>
-                                            </div>
-                                        </div>
-                                        <div
-                                                class="mt-2 rounded p-5 bg-light-primary text-dark-50 font-weight-bold font-size-lg text-right max-w-400px">
-                                            Discover what students who viewed Learn Figma - UI/UX Design. Essential
-                                            Training also viewed
-                                        </div>
-                                    </div>
-                                    <!--end::Message Out-->
-
-                                    <!--begin::Message In-->
-                                    <div class="d-flex flex-column mb-5 align-items-start">
-                                        <div class="d-flex align-items-center">
-                                            <div class="symbol symbol-circle symbol-40 mr-3">
-                                                <img alt="Pic" src="{{asset('media/svg/avatars/012-girl-5.svg')}}"/>
-                                            </div>
-                                            <div>
-                                                <a href="#" class=" text-hover-primary font-weight-bold font-size-h6">Matt
-                                                    Pears</a>
-                                                <span class="text-muted font-size-sm">40 seconds</span>
-                                            </div>
-                                        </div>
-                                        <div
-                                                class="mt-2 rounded p-5 bg-light-success text-dark-50 font-weight-bold font-size-lg text-left max-w-400px">
-                                            Most purchased Business courses during this sale!
-                                        </div>
-                                    </div>
-                                    <!--end::Message In-->
-
-                                    <!--begin::Message Out-->
-                                    <div class="d-flex flex-column mb-5 align-items-end">
-                                        <div class="d-flex align-items-center">
-                                            <div>
-                                                <span class="text-muted font-size-sm">Just now</span>
-                                                <a href="#" class=" text-hover-primary font-weight-bold font-size-h6">You</a>
-                                            </div>
-                                            <div class="symbol symbol-circle symbol-40 ml-3">
-                                                <img alt="Pic" src="{{asset('media/svg/avatars/013-girl-6.svg')}}"/>
-                                            </div>
-                                        </div>
-                                        <div
-                                                class="mt-2 rounded p-5 bg-light-primary text-dark-50 font-weight-bold font-size-lg text-right max-w-400px">
-                                            Company BBQ to celebrate the last quater achievements and goals. Food and
-                                            drinks provided
-                                        </div>
-                                    </div>
-                                    <!--end::Message Out-->
-                                </div>
-                                <!--end::Messages-->
-                            </div>
-                            <!--end::Scroll-->
-                        </div>
-                        <!--end::Body-->
-
-                        <!--begin::Footer-->
-                        <div class="card-footer align-items-center">
-                            <!--begin::Compose-->
-                            <textarea class="form-control border-0 p-0" rows="2"
-                                      placeholder="Type a message"></textarea>
-                            <div class="d-flex align-items-center justify-content-between mt-5">
-                                <div class="mr-3">
-                                    <a href="#" class="btn btn-clean btn-icon btn-md mr-1"><i
-                                                class="flaticon2-photograph icon-lg"></i></a>
-                                    <a href="#" class="btn btn-clean btn-icon btn-md"><i
-                                                class="flaticon2-photo-camera  icon-lg"></i></a>
-                                </div>
-                                <div>
-                                    <button type="button"
-                                            class="btn btn-primary btn-md text-uppercase font-weight-bold chat-send py-2 px-6">
-                                        Send
-                                    </button>
-                                </div>
-                            </div>
-                            <!--begin::Compose-->
-                        </div>
-                        <!--end::Footer-->
-                    </div>
-                    <!--end::Card-->
-                </div>
-            </div>
-        </div>
+        @include('home::layouts.chat')
         <!--end::Chat Panel-->
         <!--   --><?php
     function SquareProfilePic()
@@ -1765,17 +1500,8 @@
     /// ?>
 
     <!-- Global site tag (gtag.js) - Google Ads: 323729849 -->
-        <script async src="https://www.googletagmanager.com/gtag/js?id=AW-323729849"></script>
         <script>
             let custom_report = '<?php echo(session()->get('user')['userDetails']['userPlanDetails']['custom_report']);?>';
-            window.dataLayer = window.dataLayer || [];
-
-            function gtag() {
-                dataLayer.push(arguments);
-            }
-
-            gtag('js', new Date());
-            gtag('config', 'AW-323729849');
         </script>
         <!--begin::Global Theme Bundle(used by all pages)-->
         <script src="{{asset('plugins/global/plugins.bundle.js')}}"></script>
@@ -1805,7 +1531,7 @@
                 "hideMethod": "fadeOut"
             };
             let invitations = [];
-            let publishOrFeeds =0;
+            let publishOrFeeds = 0;
             $(document).ready(function () {
                 getReportsCount();
                 getNotifications(1);
@@ -2073,26 +1799,32 @@
                         let publishNotificationCounts = 0;
                         let teamNotificationCounts = 0;
                         let num = 1;
+                        let publishMessage;
+                        let namesArray = [];
                         if (response.code === 200) {
                             if (response.data.length > 0) {
                                 response.data.map(element => {
-                                    if (element.notifyType === 'publish_publishPosts') {
-                                        appendData2 += '<div id="notificationNum' + num + '" class="d-flex align-items-center py-3 px-5"><span class="symbol symbol-40 mr-5"><span class="font-size-h5 font-weight-bold"><i class="fas fa-rss"></i></span></span><div class="d-flex flex-column font-weight-bold"><a id="publishMessage" href="' + getStringUrl(element.notificationMessage) + '" class="mb-1 font-size-lg" target="_blank"  title="' + element.notificationMessage + '"  onclick="changeColorOnRead('+num+')">' + element.notificationMessage + '</a></div></div>';
+                                    if (element.notifyType === 'publish_publishPosts'|| element.notifyType === 'publish_failed') {
+                                        namesArray = element.notificationMessage.split(',');
+                                        for (let i = 0; i < namesArray.length-1; i++) {
+                                            publishMessage+=namesArray[i]+' ';
+                                        }
+                                        appendData2 += '<div id="notificationNum' + num + '" class="d-flex align-items-center py-3 px-5"><span class="symbol symbol-40 mr-5"><span class="font-size-h5 font-weight-bold"><i class="fas fa-rss"></i></span></span><div class="d-flex flex-column font-weight-bold"><a id="publishMessage" href="' + getStringUrl(element.notificationMessage) + '" class="mb-1 font-size-lg" target="_blank"  title="' + publishMessage + '"  onclick="changeColorOnRead(' + num + ')">' + publishMessage + '</a></div></div>';
                                         publishNotificationCounts++;
                                     } else if (element.notifyType === 'team_leave') {
-                                        appendData += '<div id="notificationNum' + num + '" class="d-flex align-items-center py-3 px-5"><span class="symbol symbol-40 mr-5"><span class="font-size-h5 font-weight-bold"><i class="fas fa-users"></i></span></span><div class="d-flex flex-column font-weight-bold"><a href="{{env('APP_URL')}}view-teams" target="_blank" class="mb-1 font-size-lg" target="_blank" onclick="changeColorOnRead('+num+')">' + element.notificationMessage + '</a></div></div>';
+                                        appendData += '<div id="notificationNum' + num + '" class="d-flex align-items-center py-3 px-5"><span class="symbol symbol-40 mr-5"><span class="font-size-h5 font-weight-bold"><i class="fas fa-users"></i></span></span><div class="d-flex flex-column font-weight-bold"><a href="{{env('APP_URL')}}view-teams" target="_blank" class="mb-1 font-size-lg" target="_blank" onclick="changeColorOnRead(' + num + ')">' + element.notificationMessage + '</a></div></div>';
                                         teamNotificationCounts++;
                                     } else if (element.notifyType === 'publish_addProfile') {
-                                        appendData += '<div id="notificationNum' + num + '" class="d-flex align-items-center py-3 px-5"><span class="symbol symbol-40 mr-5"><span class="font-size-h5 font-weight-bold"><i class="fas fa-users"></i></span></span><div class="d-flex flex-column font-weight-bold"><a href="{{env('APP_URL')}}view-teams" target="_blank" class="mb-1 font-size-lg" target="_blank" onclick="changeColorOnRead('+num+')">' + element.notificationMessage + '</a></div></div>';
+                                        appendData += '<div id="notificationNum' + num + '" class="d-flex align-items-center py-3 px-5"><span class="symbol symbol-40 mr-5"><span class="font-size-h5 font-weight-bold"><i class="fas fa-users"></i></span></span><div class="d-flex flex-column font-weight-bold"><a href="{{env('APP_URL')}}view-teams" target="_blank" class="mb-1 font-size-lg" target="_blank" onclick="changeColorOnRead(' + num + ')">' + element.notificationMessage + '</a></div></div>';
                                         teamNotificationCounts++;
                                     } else if (element.notifyType === 'team_addProfile') {
                                         teamNotificationCounts++;
-                                        appendData += '<div id="notificationNum' + num + '" class="d-flex align-items-center py-3 px-5"><span class="symbol symbol-40 mr-5"><span class="font-size-h5 font-weight-bold"><i class="fas fa-users"></i></span></span><div class="d-flex flex-column font-weight-bold"><a href="{{env('APP_URL')}}view-teams" target="_blank" class="mb-1 font-size-lg" target="_blank" onclick="changeColorOnRead('+num+')">' + element.notificationMessage + '</a></div></div>';
+                                        appendData += '<div id="notificationNum' + num + '" class="d-flex align-items-center py-3 px-5"><span class="symbol symbol-40 mr-5"><span class="font-size-h5 font-weight-bold"><i class="fas fa-users"></i></span></span><div class="d-flex flex-column font-weight-bold"><a href="{{env('APP_URL')}}view-teams" target="_blank" class="mb-1 font-size-lg" target="_blank" onclick="changeColorOnRead(' + num + ')">' + element.notificationMessage + '</a></div></div>';
                                     } else if (element.notifyType === 'team_deleteTeamSocialProfile') {
-                                        appendData += '<div id="notificationNum' + num + '" class="d-flex align-items-center py-3 px-5"><span class="symbol symbol-40 mr-5"><span class="font-size-h5 font-weight-bold"><i class="fas fa-users"></i></span></span><div class="d-flex flex-column font-weight-bold"><a href="{{env('APP_URL')}}view-teams" target="_blank" class="mb-1 font-size-lg" target="_blank" onclick="changeColorOnRead('+num+')">' + element.notificationMessage + '</a></div></div>';
+                                        appendData += '<div id="notificationNum' + num + '" class="d-flex align-items-center py-3 px-5"><span class="symbol symbol-40 mr-5"><span class="font-size-h5 font-weight-bold"><i class="fas fa-users"></i></span></span><div class="d-flex flex-column font-weight-bold"><a href="{{env('APP_URL')}}view-teams" target="_blank" class="mb-1 font-size-lg" target="_blank" onclick="changeColorOnRead(' + num + ')">' + element.notificationMessage + '</a></div></div>';
                                     } else if (element.notifyType === 'team_leave') {
                                         teamNotificationCounts++;
-                                        appendData += '<div id="notificationNum' + num + '"  class="d-flex align-items-center py-3 px-5"><span class="symbol symbol-40 mr-5"><span class="font-size-h5 font-weight-bold"><i class="fas fa-users"></i></span></span><div class="d-flex flex-column font-weight-bold"><a href="{{env('APP_URL')}}view-teams" target="_blank" class="mb-1 font-size-lg" target="_blank" onclick="changeColorOnRead('+num+')">' + element.notificationMessage + '</a></div></div>';
+                                        appendData += '<div id="notificationNum' + num + '"  class="d-flex align-items-center py-3 px-5"><span class="symbol symbol-40 mr-5"><span class="font-size-h5 font-weight-bold"><i class="fas fa-users"></i></span></span><div class="d-flex flex-column font-weight-bold"><a href="{{env('APP_URL')}}view-teams" target="_blank" class="mb-1 font-size-lg" target="_blank" onclick="changeColorOnRead(' + num + ')">' + element.notificationMessage + '</a></div></div>';
                                     }
                                     num++;
                                 });
@@ -2187,7 +1919,7 @@
                             let appendData2 = '';
                             $("#notification-user").addClass("symbol-badge bg-danger");
                             if (message.notifyType === 'publish_publishPosts') {
-                                appendData2 = '<div id="notificationNum' + num + '" class="d-flex align-items-center py-3 px-5"><span class="symbol symbol-40 mr-5"><span class="font-size-h5 font-weight-bold"><i class="fas fa-rss"></i></span></span><div class="d-flex flex-column font-weight-bold"><a id="notificationNum' + num + '" href="' + getStringUrl(message.notificationMessage) + '" class="mb-1 font-size-lg" target="_blank" onclick="changeColorOnRead('+num+')">' + message.notificationMessage + ' </a></div></div>';
+                                appendData2 = '<div id="notificationNum' + num + '" class="d-flex align-items-center py-3 px-5"><span class="symbol symbol-40 mr-5"><span class="font-size-h5 font-weight-bold"><i class="fas fa-rss"></i></span></span><div class="d-flex flex-column font-weight-bold"><a id="notificationNum' + num + '" href="' + getStringUrl(message.notificationMessage) + '" class="mb-1 font-size-lg" target="_blank" onclick="changeColorOnRead(' + num + ')">' + message.notificationMessage + ' </a></div></div>';
                                 $('#publishNotiFications').prepend(appendData2);
                             } else if (message.notifyType === 'team_invite') {
                                 $.ajax({
@@ -2215,34 +1947,34 @@
                                     }
                                 });
                             } else if (message.notifyType === 'team_accept') {
-                                appendData = '<div id="notificationNum' + num + '" class="d-flex align-items-center py-3 px-5"><span class="symbol symbol-40 mr-5"><span class="font-size-h5 font-weight-bold"><i class="fas fa-rss"></i></span></span><div class="d-flex flex-column font-weight-bold"><a  href="{{env('APP_URL')}}/view-teams" id="notificationNum' + num + '" class="mb-1 font-size-lg" onclick="changeColorOnRead('+num+')" target="_blank">' + message.notificationMessage + '</a></div></div>';
+                                appendData = '<div id="notificationNum' + num + '" class="d-flex align-items-center py-3 px-5"><span class="symbol symbol-40 mr-5"><span class="font-size-h5 font-weight-bold"><i class="fas fa-rss"></i></span></span><div class="d-flex flex-column font-weight-bold"><a  href="{{env('APP_URL')}}/view-teams" id="notificationNum' + num + '" class="mb-1 font-size-lg" onclick="changeColorOnRead(' + num + ')" target="_blank">' + message.notificationMessage + '</a></div></div>';
                                 $('#userNotiFications').prepend(appendData);
                             } else if (message.notifyType === 'team_decline') {
-                                appendData = '<div id="notificationNum' + num + '" class="d-flex align-items-center py-3 px-5"><span class="symbol symbol-40 mr-5"><span class="font-size-h5 font-weight-bold"><i class="fas fa-rss"></i></span></span><div class="d-flex flex-column font-weight-bold"><a href="{{env('APP_URL')}}/view-teams" id="notificationNum' + num + '" class="mb-1 font-size-lg" onclick="changeColorOnRead('+num+')" target="_blank">' + message.notificationMessage + '</a></div></div>';
+                                appendData = '<div id="notificationNum' + num + '" class="d-flex align-items-center py-3 px-5"><span class="symbol symbol-40 mr-5"><span class="font-size-h5 font-weight-bold"><i class="fas fa-rss"></i></span></span><div class="d-flex flex-column font-weight-bold"><a href="{{env('APP_URL')}}/view-teams" id="notificationNum' + num + '" class="mb-1 font-size-lg" onclick="changeColorOnRead(' + num + ')" target="_blank">' + message.notificationMessage + '</a></div></div>';
                                 $('#userNotiFications').prepend(appendData);
                             } else if (message.notifyType === 'team_removeTeamMember') {
-                                appendData = '<div id="notificationNum' + num + '" class="d-flex align-items-center py-3 px-5"><span class="symbol symbol-40 mr-5"><span class="font-size-h5 font-weight-bold"><i class="fas fa-rss"></i></span></span><div class="d-flex flex-column font-weight-bold"><a href="{{env('APP_URL')}}/view-teams" id="notificationNum' + num + '" class="mb-1 font-size-lg" onclick="changeColorOnRead('+num+')" target="_blank">' + message.notificationMessage + '</a></div></div>';
+                                appendData = '<div id="notificationNum' + num + '" class="d-flex align-items-center py-3 px-5"><span class="symbol symbol-40 mr-5"><span class="font-size-h5 font-weight-bold"><i class="fas fa-rss"></i></span></span><div class="d-flex flex-column font-weight-bold"><a href="{{env('APP_URL')}}/view-teams" id="notificationNum' + num + '" class="mb-1 font-size-lg" onclick="changeColorOnRead(' + num + ')" target="_blank">' + message.notificationMessage + '</a></div></div>';
                                 $('#userNotiFications').prepend(appendData);
                             } else if (message.notifyType === 'team_editMemberPermission') {
-                                appendData = '<div id="notificationNum' + num + '" class="d-flex align-items-center py-3 px-5"><span class="symbol symbol-40 mr-5"><span class="font-size-h5 font-weight-bold"><i class="fas fa-rss"></i></span></span><div class="d-flex flex-column font-weight-bold"><a href="{{env('APP_URL')}}/view-teams" id="notificationNum' + num + '" class="mb-1 font-size-lg" onclick="changeColorOnRead('+num+')" target="_blank">' + message.notificationMessage + '</a></div></div>';
+                                appendData = '<div id="notificationNum' + num + '" class="d-flex align-items-center py-3 px-5"><span class="symbol symbol-40 mr-5"><span class="font-size-h5 font-weight-bold"><i class="fas fa-rss"></i></span></span><div class="d-flex flex-column font-weight-bold"><a href="{{env('APP_URL')}}/view-teams" id="notificationNum' + num + '" class="mb-1 font-size-lg" onclick="changeColorOnRead(' + num + ')" target="_blank">' + message.notificationMessage + '</a></div></div>';
                                 $('#userNotiFications').prepend(appendData);
                             } else if (message.notifyType === 'team_leave') {
-                                appendData = '<div id="notificationNum' + num + '" class="d-flex align-items-center py-3 px-5"><span class="symbol symbol-40 mr-5"><span class="font-size-h5 font-weight-bold"><i class="fas fa-rss"></i></span></span><div class="d-flex flex-column font-weight-bold"><a href="{{env('APP_URL')}}/view-teams" id="notificationNum' + num + '"  class="mb-1 font-size-lg" onclick="changeColorOnRead('+num+')" target="_blank">' + message.notificationMessage + '</a></div></div>';
+                                appendData = '<div id="notificationNum' + num + '" class="d-flex align-items-center py-3 px-5"><span class="symbol symbol-40 mr-5"><span class="font-size-h5 font-weight-bold"><i class="fas fa-rss"></i></span></span><div class="d-flex flex-column font-weight-bold"><a href="{{env('APP_URL')}}/view-teams" id="notificationNum' + num + '"  class="mb-1 font-size-lg" onclick="changeColorOnRead(' + num + ')" target="_blank">' + message.notificationMessage + '</a></div></div>';
                                 $('#invitation').prepend(appendData);
                             } else if (message.notifyType === 'publish_addProfile') {
-                                appendData = '<div id="notificationNum' + num + '" class="d-flex align-items-center py-3 px-5"><span class="symbol symbol-40 mr-5"><span class="font-size-h5 font-weight-bold"><i class="fas fa-rss"></i></span></span><div class="d-flex flex-column font-weight-bold"><a href="{{env('APP_URL')}}/view-teams" id="notificationNum' + num + '" class="mb-1 font-size-lg" onclick="changeColorOnRead('+num+')" target="_blank">' + message.notificationMessage + '</a></div></div>';
+                                appendData = '<div id="notificationNum' + num + '" class="d-flex align-items-center py-3 px-5"><span class="symbol symbol-40 mr-5"><span class="font-size-h5 font-weight-bold"><i class="fas fa-rss"></i></span></span><div class="d-flex flex-column font-weight-bold"><a href="{{env('APP_URL')}}/view-teams" id="notificationNum' + num + '" class="mb-1 font-size-lg" onclick="changeColorOnRead(' + num + ')" target="_blank">' + message.notificationMessage + '</a></div></div>';
                                 $('#invitation').prepend(appendData);
                             } else if (message.notifyType === 'team_addProfile') {
-                                appendData = '<div id="notificationNum' + num + '" class="d-flex align-items-center py-3 px-5"><span class="symbol symbol-40 mr-5"><span class="font-size-h5 font-weight-bold"><i class="fas fa-rss"></i></span></span><div class="d-flex flex-column font-weight-bold"><a href="{{env('APP_URL')}}/view-teams" id="notificationNum' + num + '" class="mb-1 font-size-lg" onclick="changeColorOnRead('+num+')" target="_blank">' + message.notificationMessage + '</a></div></div>';
+                                appendData = '<div id="notificationNum' + num + '" class="d-flex align-items-center py-3 px-5"><span class="symbol symbol-40 mr-5"><span class="font-size-h5 font-weight-bold"><i class="fas fa-rss"></i></span></span><div class="d-flex flex-column font-weight-bold"><a href="{{env('APP_URL')}}/view-teams" id="notificationNum' + num + '" class="mb-1 font-size-lg" onclick="changeColorOnRead(' + num + ')" target="_blank">' + message.notificationMessage + '</a></div></div>';
                                 $('#invitation').prepend(appendData);
                             } else if (message.notifyType === 'team_deleteTeamSocialProfile') {
-                                appendData = '<div id="notificationNum' + num + '" class="d-flex align-items-center py-3 px-5"><span class="symbol symbol-40 mr-5"><span class="font-size-h5 font-weight-bold"><i class="fas fa-rss"></i></span></span><div class="d-flex flex-column font-weight-bold"><a href="{{env('APP_URL')}}/view-teams" id="notificationNum' + num + '"  class="mb-1 font-size-lg" onclick="changeColorOnRead('+num+')" target="_blank">' + message.notificationMessage + '</a></div></div>';
+                                appendData = '<div id="notificationNum' + num + '" class="d-flex align-items-center py-3 px-5"><span class="symbol symbol-40 mr-5"><span class="font-size-h5 font-weight-bold"><i class="fas fa-rss"></i></span></span><div class="d-flex flex-column font-weight-bold"><a href="{{env('APP_URL')}}/view-teams" id="notificationNum' + num + '"  class="mb-1 font-size-lg" onclick="changeColorOnRead(' + num + ')" target="_blank">' + message.notificationMessage + '</a></div></div>';
                                 $('#invitation').prepend(appendData);
                             } else if (message.notifyType === 'team_leave') {
-                                appendData = '<div id="notificationNum' + num + '" class="d-flex align-items-center py-3 px-5"><span class="symbol symbol-40 mr-5"><span class="font-size-h5 font-weight-bold"><i class="fas fa-rss"></i></span></span><div class="d-flex flex-column font-weight-bold"><a href="{{env('APP_URL')}}/view-teams" id="notificationNum' + num + '" class="mb-1 font-size-lg" onclick="changeColorOnRead('+num+')" target="_blank">' + message.notificationMessage + '</a></div></div>';
+                                appendData = '<div id="notificationNum' + num + '" class="d-flex align-items-center py-3 px-5"><span class="symbol symbol-40 mr-5"><span class="font-size-h5 font-weight-bold"><i class="fas fa-rss"></i></span></span><div class="d-flex flex-column font-weight-bold"><a href="{{env('APP_URL')}}/view-teams" id="notificationNum' + num + '" class="mb-1 font-size-lg" onclick="changeColorOnRead(' + num + ')" target="_blank">' + message.notificationMessage + '</a></div></div>';
                                 $('#invitation').prepend(appendData);
                             } else {
-                                appendData = '<div id="notificationNum' + num + '" class="d-flex align-items-center py-3 px-5 "><span class="symbol symbol-40 mr-5"><span class="font-size-h5 font-weight-bold"><i class="fas fa-user"></i></span></span><div class="d-flex flex-column font-weight-bold"><a href="{{env('APP_URL')}}/view-teams" id="notificationNum' + num + '" class="mb-1 font-size-lg" onclick="changeColorOnRead('+num+')" target="_blank">' + message.notificationMessage + '</a></div></div>';
+                                appendData = '<div id="notificationNum' + num + '" class="d-flex align-items-center py-3 px-5 "><span class="symbol symbol-40 mr-5"><span class="font-size-h5 font-weight-bold"><i class="fas fa-user"></i></span></span><div class="d-flex flex-column font-weight-bold"><a href="{{env('APP_URL')}}/view-teams" id="notificationNum' + num + '" class="mb-1 font-size-lg" onclick="changeColorOnRead(' + num + ')" target="_blank">' + message.notificationMessage + '</a></div></div>';
                                 $('#invitation').prepend(appendData);
                             }
                         });
@@ -2271,21 +2003,21 @@
                     },
                     success: function (response) {
                         let appendData = '';
-                        let num=1;
+                        let num = 1;
                         if (response.code === 200) {
                             response.data.map(element => {
                                 if (element.notifyType === 'team_leave') {
-                                    appendData += '<div id="notificationNum' + num + '" class="d-flex align-items-center py-3 px-5"><span class="symbol symbol-40 mr-5"><span class="font-size-h5 font-weight-bold"><i class="fas fa-users"></i></span></span><div class="d-flex flex-column font-weight-bold"><a href="{{env('APP_URL')}}view-teams" target="_blank" class="mb-1 font-size-lg" onclick="changeColorOnRead('+num+')" >' + element.notificationMessage + '</a></div></div>';
+                                    appendData += '<div id="notificationNum' + num + '" class="d-flex align-items-center py-3 px-5"><span class="symbol symbol-40 mr-5"><span class="font-size-h5 font-weight-bold"><i class="fas fa-users"></i></span></span><div class="d-flex flex-column font-weight-bold"><a href="{{env('APP_URL')}}view-teams" target="_blank" class="mb-1 font-size-lg" onclick="changeColorOnRead(' + num + ')" >' + element.notificationMessage + '</a></div></div>';
                                 } else if (element.notifyType === 'publish_addProfile') {
-                                    appendData += '<div id="notificationNum' + num + '" class="d-flex align-items-center py-3 px-5"><span class="symbol symbol-40 mr-5"><span class="font-size-h5 font-weight-bold"><i class="fas fa-users"></i></span></span><div class="d-flex flex-column font-weight-bold"><a href="{{env('APP_URL')}}view-teams" target="_blank" class="mb-1 font-size-lg" onclick="changeColorOnRead('+num+')">' + element.notificationMessage + '</a></div></div>';
+                                    appendData += '<div id="notificationNum' + num + '" class="d-flex align-items-center py-3 px-5"><span class="symbol symbol-40 mr-5"><span class="font-size-h5 font-weight-bold"><i class="fas fa-users"></i></span></span><div class="d-flex flex-column font-weight-bold"><a href="{{env('APP_URL')}}view-teams" target="_blank" class="mb-1 font-size-lg" onclick="changeColorOnRead(' + num + ')">' + element.notificationMessage + '</a></div></div>';
                                 } else if (element.notifyType === 'team_addProfile') {
-                                    appendData += '<div id="notificationNum' + num + '" class="d-flex align-items-center py-3 px-5"><span class="symbol symbol-40 mr-5"><span class="font-size-h5 font-weight-bold"><i class="fas fa-users"></i></span></span><div class="d-flex flex-column font-weight-bold"><a href="{{env('APP_URL')}}view-teams" target="_blank" class="mb-1 font-size-lg" onclick="changeColorOnRead('+num+')">' + element.notificationMessage + '</a></div></div>';
+                                    appendData += '<div id="notificationNum' + num + '" class="d-flex align-items-center py-3 px-5"><span class="symbol symbol-40 mr-5"><span class="font-size-h5 font-weight-bold"><i class="fas fa-users"></i></span></span><div class="d-flex flex-column font-weight-bold"><a href="{{env('APP_URL')}}view-teams" target="_blank" class="mb-1 font-size-lg" onclick="changeColorOnRead(' + num + ')">' + element.notificationMessage + '</a></div></div>';
                                 } else if (element.notifyType === 'team_deleteTeamSocialProfile') {
-                                    appendData += '<div id="notificationNum' + num + '" class="d-flex align-items-center py-3 px-5"><span class="symbol symbol-40 mr-5"><span class="font-size-h5 font-weight-bold"><i class="fas fa-users"></i></span></span><div class="d-flex flex-column font-weight-bold"><a href="{{env('APP_URL')}}view-teams" target="_blank"  class="mb-1 font-size-lg" onclick="changeColorOnRead('+num+')">' + element.notificationMessage + '</a></div></div>';
+                                    appendData += '<div id="notificationNum' + num + '" class="d-flex align-items-center py-3 px-5"><span class="symbol symbol-40 mr-5"><span class="font-size-h5 font-weight-bold"><i class="fas fa-users"></i></span></span><div class="d-flex flex-column font-weight-bold"><a href="{{env('APP_URL')}}view-teams" target="_blank"  class="mb-1 font-size-lg" onclick="changeColorOnRead(' + num + ')">' + element.notificationMessage + '</a></div></div>';
                                 } else if (element.notifyType === 'team_leave') {
-                                    appendData += '<div  id="notificationNum' + num + '" class="d-flex align-items-center py-3 px-5"><span class="symbol symbol-40 mr-5"><span class="font-size-h5 font-weight-bold"><i class="fas fa-users"></i></span></span><div class="d-flex flex-column font-weight-bold"><a href="{{env('APP_URL')}}view-teams" target="_blank" class="mb-1 font-size-lg" onclick="changeColorOnRead('+num+')">' + element.notificationMessage + '</a></div></div>';
+                                    appendData += '<div  id="notificationNum' + num + '" class="d-flex align-items-center py-3 px-5"><span class="symbol symbol-40 mr-5"><span class="font-size-h5 font-weight-bold"><i class="fas fa-users"></i></span></span><div class="d-flex flex-column font-weight-bold"><a href="{{env('APP_URL')}}view-teams" target="_blank" class="mb-1 font-size-lg" onclick="changeColorOnRead(' + num + ')">' + element.notificationMessage + '</a></div></div>';
                                 } else {
-                                    appendData += '<div class="d-flex align-items-center py-3 px-5 "><span class="symbol symbol-40 mr-5"><span class="font-size-h5 font-weight-bold"><i class="fas fa-users"></i></span></span><div class="d-flex flex-column font-weight-bold"><a href="{{env('APP_URL')}}view-teams" class="mb-1 font-size-lg" target="_blank" onclick="changeColorOnRead('+num+')">' + element.notificationMessage + '</a></div></div>';
+                                    appendData += '<div class="d-flex align-items-center py-3 px-5 "><span class="symbol symbol-40 mr-5"><span class="font-size-h5 font-weight-bold"><i class="fas fa-users"></i></span></span><div class="d-flex flex-column font-weight-bold"><a href="{{env('APP_URL')}}view-teams" class="mb-1 font-size-lg" target="_blank" onclick="changeColorOnRead(' + num + ')">' + element.notificationMessage + '</a></div></div>';
                                 }
                                 num++;
                             });
@@ -2344,15 +2076,15 @@
 
 
                                     } else if (element.notifyType === 'team_accept') {
-                                        appendData2 += '<div id="notificationNum' + num + '" class="d-flex align-items-center py-3 px-5"><span class="symbol symbol-40 mr-5"><span class="font-size-h5 font-weight-bold"><i class="fas fa-user"></i></span></span><div class="d-flex flex-column font-weight-bold"><a href="{{env('APP_URL')}}/view-teams" target="_blank" class="mb-1 font-size-lg" onclick="changeColorOnRead('+num+')">' + element.notificationMessage + '</a></div></div>';
+                                        appendData2 += '<div id="notificationNum' + num + '" class="d-flex align-items-center py-3 px-5"><span class="symbol symbol-40 mr-5"><span class="font-size-h5 font-weight-bold"><i class="fas fa-user"></i></span></span><div class="d-flex flex-column font-weight-bold"><a href="{{env('APP_URL')}}/view-teams" target="_blank" class="mb-1 font-size-lg" onclick="changeColorOnRead(' + num + ')">' + element.notificationMessage + '</a></div></div>';
                                     } else if (element.notifyType === 'team_decline') {
-                                        appendData2 += '<div id="notificationNum' + num + '" class="d-flex align-items-center py-3 px-5"><span class="symbol symbol-40 mr-5"><span class="font-size-h5 font-weight-bold"><i class="fas fa-user"></i></span></span><div class="d-flex flex-column font-weight-bold"><a href="{{env('APP_URL')}}/view-teams" target="_blank" class="mb-1 font-size-lg" onclick="changeColorOnRead('+num+')">' + element.notificationMessage + '</a></div></div>';
+                                        appendData2 += '<div id="notificationNum' + num + '" class="d-flex align-items-center py-3 px-5"><span class="symbol symbol-40 mr-5"><span class="font-size-h5 font-weight-bold"><i class="fas fa-user"></i></span></span><div class="d-flex flex-column font-weight-bold"><a href="{{env('APP_URL')}}/view-teams" target="_blank" class="mb-1 font-size-lg" onclick="changeColorOnRead(' + num + ')">' + element.notificationMessage + '</a></div></div>';
                                     } else if (element.notifyType === 'team_removeTeamMember') {
-                                        appendData2 += '<div id="notificationNum' + num + '" class="d-flex align-items-center py-3 px-5"><span class="symbol symbol-40 mr-5"><span class="font-size-h5 font-weight-bold"><i class="fas fa-user"></i></span></span><div class="d-flex flex-column font-weight-bold"><a href="{{env('APP_URL')}}/view-teams" target="_blank" class="mb-1 font-size-lg" onclick="changeColorOnRead('+num+')">' + element.notificationMessage + '</a></div></div>';
+                                        appendData2 += '<div id="notificationNum' + num + '" class="d-flex align-items-center py-3 px-5"><span class="symbol symbol-40 mr-5"><span class="font-size-h5 font-weight-bold"><i class="fas fa-user"></i></span></span><div class="d-flex flex-column font-weight-bold"><a href="{{env('APP_URL')}}/view-teams" target="_blank" class="mb-1 font-size-lg" onclick="changeColorOnRead(' + num + ')">' + element.notificationMessage + '</a></div></div>';
                                     } else if (element.notifyType === 'team_editMemberPermission') {
-                                        appendData2 += '<div id="notificationNum' + num + '" class="d-flex align-items-center py-3 px-5"><span class="symbol symbol-40 mr-5"><span class="font-size-h5 font-weight-bold"><i class="fas fa-user"></i></span></span><div class="d-flex flex-column font-weight-bold"><a href="{{env('APP_URL')}}/view-teams" target="_blank" class="mb-1 font-size-lg" onclick="changeColorOnRead('+num+')">' + element.notificationMessage + '</a></div></div>';
+                                        appendData2 += '<div id="notificationNum' + num + '" class="d-flex align-items-center py-3 px-5"><span class="symbol symbol-40 mr-5"><span class="font-size-h5 font-weight-bold"><i class="fas fa-user"></i></span></span><div class="d-flex flex-column font-weight-bold"><a href="{{env('APP_URL')}}/view-teams" target="_blank" class="mb-1 font-size-lg" onclick="changeColorOnRead(' + num + ')">' + element.notificationMessage + '</a></div></div>';
                                     } else {
-                                        appendData2 += '<div id="notificationNum' + num + '" class="d-flex align-items-center py-3 px-5 "><span class="symbol symbol-40 mr-5"><span class="font-size-h5 font-weight-bold"><i class="fas fa-user"></i></span></span><div class="d-flex flex-column font-weight-bold"><a href="{{env('APP_URL')}}/view-teams" target="_blank" class="mb-1 font-size-lg" onclick="changeColorOnRead('+num+')">' + element.notificationMessage + '</a></div></div>';
+                                        appendData2 += '<div id="notificationNum' + num + '" class="d-flex align-items-center py-3 px-5 "><span class="symbol symbol-40 mr-5"><span class="font-size-h5 font-weight-bold"><i class="fas fa-user"></i></span></span><div class="d-flex flex-column font-weight-bold"><a href="{{env('APP_URL')}}/view-teams" target="_blank" class="mb-1 font-size-lg" onclick="changeColorOnRead(' + num + ')">' + element.notificationMessage + '</a></div></div>';
                                     }
                                     num++;
                                 });
@@ -2432,17 +2164,17 @@
                         if (response.code === 200) {
                             response.data.map(element => {
                                 if (element.notifyType === 'team_invite') {
-                                    appendData += '<div id="notificationNum' + num + '" class="d-flex align-items-center py-3 px-5"><span class="symbol symbol-40 mr-5"><span class="font-size-h5 font-weight-bold"><i class="fas fa-user"></i></span></span><div class="d-flex flex-column font-weight-bold"><a href="{{env('APP_URL')}}/view-teams" target="_blank" class="mb-1 font-size-lg" onclick="changeColorOnRead('+num+')">' + element.notificationMessage + '</a></div></div>';
+                                    appendData += '<div id="notificationNum' + num + '" class="d-flex align-items-center py-3 px-5"><span class="symbol symbol-40 mr-5"><span class="font-size-h5 font-weight-bold"><i class="fas fa-user"></i></span></span><div class="d-flex flex-column font-weight-bold"><a href="{{env('APP_URL')}}/view-teams" target="_blank" class="mb-1 font-size-lg" onclick="changeColorOnRead(' + num + ')">' + element.notificationMessage + '</a></div></div>';
                                 } else if (element.notifyType === 'team_accept') {
-                                    appendData += '<div id="notificationNum' + num + '" class="d-flex align-items-center py-3 px-5"><span class="symbol symbol-40 mr-5"><span class="font-size-h5 font-weight-bold"><i class="fas fa-user"></i></span></span><div class="d-flex flex-column font-weight-bold"><a href="{{env('APP_URL')}}/view-teams" target="_blank" class="mb-1 font-size-lg" onclick="changeColorOnRead('+num+')">' + element.notificationMessage + '</a></div></div>';
+                                    appendData += '<div id="notificationNum' + num + '" class="d-flex align-items-center py-3 px-5"><span class="symbol symbol-40 mr-5"><span class="font-size-h5 font-weight-bold"><i class="fas fa-user"></i></span></span><div class="d-flex flex-column font-weight-bold"><a href="{{env('APP_URL')}}/view-teams" target="_blank" class="mb-1 font-size-lg" onclick="changeColorOnRead(' + num + ')">' + element.notificationMessage + '</a></div></div>';
                                 } else if (element.notifyType === 'team_decline') {
-                                    appendData += '<div id="notificationNum' + num + '" class="d-flex align-items-center py-3 px-5"><span class="symbol symbol-40 mr-5"><span class="font-size-h5 font-weight-bold"><i class="fas fa-user"></i></span></span><div class="d-flex flex-column font-weight-bold"><a href="{{env('APP_URL')}}/view-teams" target="_blank" class="mb-1 font-size-lg" onclick="changeColorOnRead('+num+')">' + element.notificationMessage + '</a></div></div>';
+                                    appendData += '<div id="notificationNum' + num + '" class="d-flex align-items-center py-3 px-5"><span class="symbol symbol-40 mr-5"><span class="font-size-h5 font-weight-bold"><i class="fas fa-user"></i></span></span><div class="d-flex flex-column font-weight-bold"><a href="{{env('APP_URL')}}/view-teams" target="_blank" class="mb-1 font-size-lg" onclick="changeColorOnRead(' + num + ')">' + element.notificationMessage + '</a></div></div>';
                                 } else if (element.notifyType === 'team_removeTeamMember') {
-                                    appendData += '<div id="notificationNum' + num + '" class="d-flex align-items-center py-3 px-5"><span class="symbol symbol-40 mr-5"><span class="font-size-h5 font-weight-bold"><i class="fas fa-user"></i></span></span><div class="d-flex flex-column font-weight-bold"><a href="{{env('APP_URL')}}/view-teams" target="_blank" class="mb-1 font-size-lg" onclick="changeColorOnRead('+num+')">' + element.notificationMessage + '</a></div></div>';
+                                    appendData += '<div id="notificationNum' + num + '" class="d-flex align-items-center py-3 px-5"><span class="symbol symbol-40 mr-5"><span class="font-size-h5 font-weight-bold"><i class="fas fa-user"></i></span></span><div class="d-flex flex-column font-weight-bold"><a href="{{env('APP_URL')}}/view-teams" target="_blank" class="mb-1 font-size-lg" onclick="changeColorOnRead(' + num + ')">' + element.notificationMessage + '</a></div></div>';
                                 } else if (element.notifyType === 'team_editMemberPermission') {
-                                    appendData += '<div id="notificationNum' + num + '" class="d-flex align-items-center py-3 px-5"><span class="symbol symbol-40 mr-5"><span class="font-size-h5 font-weight-bold"><i class="fas fa-user"></i></span></span><div class="d-flex flex-column font-weight-bold"><a href="{{env('APP_URL')}}/view-teams" target="_blank" class="mb-1 font-size-lg" onclick="changeColorOnRead('+num+')">' + element.notificationMessage + '</a></div></div>';
+                                    appendData += '<div id="notificationNum' + num + '" class="d-flex align-items-center py-3 px-5"><span class="symbol symbol-40 mr-5"><span class="font-size-h5 font-weight-bold"><i class="fas fa-user"></i></span></span><div class="d-flex flex-column font-weight-bold"><a href="{{env('APP_URL')}}/view-teams" target="_blank" class="mb-1 font-size-lg" onclick="changeColorOnRead(' + num + ')">' + element.notificationMessage + '</a></div></div>';
                                 } else {
-                                    appendData += '<div id="notificationNum' + num + '" class="d-flex align-items-center py-3 px-5 "><span class="symbol symbol-40 mr-5"><span class="font-size-h5 font-weight-bold"><i class="fas fa-user"></i></span></span><div class="d-flex flex-column font-weight-bold"><a href="{{env('APP_URL')}}/view-teams" target="_blank" class="mb-1 font-size-lg" onclick="changeColorOnRead('+num+')">' + element.notificationMessage + '</a></div></div>';
+                                    appendData += '<div id="notificationNum' + num + '" class="d-flex align-items-center py-3 px-5 "><span class="symbol symbol-40 mr-5"><span class="font-size-h5 font-weight-bold"><i class="fas fa-user"></i></span></span><div class="d-flex flex-column font-weight-bold"><a href="{{env('APP_URL')}}/view-teams" target="_blank" class="mb-1 font-size-lg" onclick="changeColorOnRead(' + num + ')">' + element.notificationMessage + '</a></div></div>';
                                 }
                                 num++;
                             });
@@ -2457,8 +2189,16 @@
              * This function makes read all user notificaations on checked of checkboxes.
              * @return {object} Returns getNotifications from  in JSON object format.
              */
-            $("#checkboxes2").click(function () {
-                if ($('#checkboxes2').is(':checked')) {
+
+            if ($(".checkboxes_input").length) {
+                $(".checkboxes_input").each( function () {
+                    const $checkboxesInput = $(this);
+                    if ($checkboxesInput.is(':checked')) {
+                        handlerCheckedInput()
+                    }
+                })
+            }
+            function handlerCheckedInput() {
                     $.ajax({
                         type: 'put',
                         url: '/mark-all-notifications-user-read',
@@ -2478,8 +2218,7 @@
                             }
                         }
                     });
-                }
-            });
+            };
 
             /**
              * TODO we've to make read all team notifications on check box click.
@@ -2535,9 +2274,8 @@
                 }
             }
 
-            function changeColorOnRead(data)
-            {
-                $('div#notificationNum' + data).addClass( 'read');
+            function changeColorOnRead(data) {
+                $('div#notificationNum' + data).addClass('read');
             }
 
             /**
